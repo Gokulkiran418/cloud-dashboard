@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { Resource} from '@/services/resources';
+import type { Resource } from '@/services/resources';
 import { resourcesApi } from '@/services/resources';
 import ResourcesTable from '@/components/ResourcesTable';
+import RecommendationsPanel from '@/components/RecommendationsPanel';
 
 export default function App() {
   const [healthStatus, setHealthStatus] = useState<string>('checking...');
@@ -11,7 +12,6 @@ export default function App() {
   const [errorResources, setErrorResources] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    // API Health Check
     const checkHealth = async () => {
       try {
         const health = await resourcesApi.healthCheck();
@@ -23,7 +23,6 @@ export default function App() {
       }
     };
 
-    // Fetch Resource List
     const fetchResources = async () => {
       setLoadingResources(true);
       setErrorResources(undefined);
@@ -48,6 +47,7 @@ export default function App() {
           Cloud Optimization Dashboard
         </h1>
 
+        {/* System Status Card */}
         <div className="card mb-8">
           <h2 className="text-xl font-semibold mb-4">System Status</h2>
           <div className="flex items-center space-x-4">
@@ -57,18 +57,29 @@ export default function App() {
                   apiConnected ? 'bg-green-500' : 'bg-red-500'
                 }`}
               ></div>
-              <span className="text-sm text-gray-600">API Status: {healthStatus}</span>
+              <span className="text-sm text-gray-600">
+                API Status: {healthStatus}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="card">
+        {/* Cloud Resources Table */}
+        <div className="card mb-8">
           <h2 className="text-xl font-semibold mb-4">Cloud Resources</h2>
           <ResourcesTable
             resources={resources}
             loading={loadingResources}
             error={errorResources}
           />
+        </div>
+
+        {/* Recommendations Panel */}
+        <div className="card">
+          <RecommendationsPanel onImplement={() => {
+            // TODO: Optionally refetch summary or resources after applying a recommendation
+            // fetchResources(); // Uncomment if needed
+          }} />
         </div>
       </div>
     </div>
