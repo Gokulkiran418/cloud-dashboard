@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 from typing import List, Dict, Any
 from sqlmodel import Session, select, text
 from models import Resource, ResourceResponse, engine
-import datetime
+from datetime import datetime
+
 
 
 # 1. Load ENV
