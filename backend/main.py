@@ -4,6 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
+from fastapi import FastAPI, Depends, Query
+from typing import List
+from sqlmodel import Session, select
+from models import Resource, ResourceResponse, engine
+
 
 # 1. Load ENV
 load_dotenv()
@@ -43,4 +48,18 @@ def health_check():
 @app.get("/")
 def root():
     return {"message": "Hello from FastAPI backend!"}
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+@app.get("/resources", response_model=List[ResourceResponse], tags=["resources"])
+def list_resources(
+    limit: int = Query(20, ge=1, le=100, description="Max results to return (default 20, max 100)"),
+    offset: int = Query(0, ge=0, description="How many items to skip (default 0)"),
+    session: Session = Depends(get_session)
+):
+    stmt = select(Resource).offset(offset).limit(limit)
+    resources = session.exec(stmt).all()
+    return resources
 
