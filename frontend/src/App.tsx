@@ -5,6 +5,7 @@ import RecommendationsPanel from '@/components/RecommendationsPanel';
 import SummaryHeader from '@/components/SummaryHeader';
 import NavBar from '@/components/NavBar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Squares from '@/components/Squares';
 
 export default function App() {
   const [healthStatus, setHealthStatus] = useState<string>('checking...');
@@ -62,7 +63,15 @@ export default function App() {
     <ErrorBoundary>
       <div className="min-h-screen bg-black transition-all relative">
         {/* DotGrid Background */}
-    
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <Squares 
+          speed={0.3} 
+          squareSize={40}
+          direction='diagonal'
+          borderColor='#2A1458'
+          hoverFillColor='#222'
+        />
+      </div>
         
         {/* Content Layer */}
         <div className="relative z-10">

@@ -33,7 +33,7 @@ const ResourcesTable: React.FC<ResourcesTableProps> = ({ resources, loading, err
     );
 
   return (
-    <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-700 bg-gray-900">
+    <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-700 bg-black">
       <table className="min-w-full divide-y divide-gray-700">
         <thead className="bg-gray-800">
           <tr>
