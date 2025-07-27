@@ -1,26 +1,44 @@
+import { useEffect, useState } from 'react';
+import type { Resource} from '@/services/resources';
+import { resourcesApi } from '@/services/resources';
+import ResourcesTable from '@/components/ResourcesTable';
 
-import { useState, useEffect } from 'react';
-import { resourcesApi } from './services/resources';
-
-function App() {
+export default function App() {
   const [healthStatus, setHealthStatus] = useState<string>('checking...');
   const [apiConnected, setApiConnected] = useState<boolean>(false);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loadingResources, setLoadingResources] = useState<boolean>(true);
+  const [errorResources, setErrorResources] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    // Test API connection on startup
+    // API Health Check
     const checkHealth = async () => {
       try {
         const health = await resourcesApi.healthCheck();
         setHealthStatus(health.status);
         setApiConnected(health.status === 'ok');
-      } catch (error) {
+      } catch (e) {
         setHealthStatus('error');
         setApiConnected(false);
-        console.error('API health check failed:', error);
+      }
+    };
+
+    // Fetch Resource List
+    const fetchResources = async () => {
+      setLoadingResources(true);
+      setErrorResources(undefined);
+      try {
+        const data = await resourcesApi.getResources();
+        setResources(data);
+      } catch (e: any) {
+        setErrorResources(e.message || 'Failed to load resources');
+      } finally {
+        setLoadingResources(false);
       }
     };
 
     checkHealth();
+    fetchResources();
   }, []);
 
   return (
@@ -29,49 +47,30 @@ function App() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Cloud Optimization Dashboard
         </h1>
-        
+
         <div className="card mb-8">
           <h2 className="text-xl font-semibold mb-4">System Status</h2>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${
-                apiConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}></div>
-              <span className="text-sm text-gray-600">
-                API Status: {healthStatus}
-              </span>
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  apiConnected ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              ></div>
+              <span className="text-sm text-gray-600">API Status: {healthStatus}</span>
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="card">
-            <h3 className="text-lg font-medium mb-2">Next Steps</h3>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>✅ Frontend bootstrapped with Vite + React + TypeScript</li>
-              <li>✅ Tailwind CSS configured</li>
-              <li>✅ API service layer created</li>
-              <li>✅ Environment configuration ready</li>
-              <li>⏳ Build resource table component</li>
-              <li>⏳ Build recommendations panel</li>
-              <li>⏳ Add summary dashboard</li>
-            </ul>
-          </div>
-          
-          <div className="card">
-            <h3 className="text-lg font-medium mb-2">Tech Stack</h3>
-            <div className="text-sm text-gray-600 space-y-1">
-              <div>⚛️ React 18 with TypeScript</div>
-              <div>🎨 Tailwind CSS</div>
-              <div>📡 Axios for API calls</div>
-              <div>⚡ Vite for fast development</div>
-              <div>🔧 ESLint + Prettier</div>
-            </div>
-          </div>
+        <div className="card">
+          <h2 className="text-xl font-semibold mb-4">Cloud Resources</h2>
+          <ResourcesTable
+            resources={resources}
+            loading={loadingResources}
+            error={errorResources}
+          />
         </div>
       </div>
     </div>
   );
 }
-
-export default App;
