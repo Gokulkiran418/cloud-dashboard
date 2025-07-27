@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, HTTPException,  Depends, Query
+from fastapi.openapi.utils import get_openapi
 from models import RecommendationResponse, RecommendationsListResponse
 from optimizer import OptimizationEngine
 from fastapi.middleware.cors import CORSMiddleware
@@ -112,3 +113,7 @@ def implement_recommendation(
         "resource_name": resource.name,
         "implemented_at": datetime.utcnow().isoformat()
     }
+    
+@app.get("/openapi.json")
+def openapi_schema():
+    return get_openapi(title="CloudOpt API", version="1.0", routes=app.routes)
