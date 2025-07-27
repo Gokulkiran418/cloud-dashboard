@@ -7,7 +7,7 @@ from sqlmodel import SQLModel, create_engine, Session
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 from typing import List, Dict, Any
-from sqlmodel import Session, select
+from sqlmodel import Session, select, text
 from models import Resource, ResourceResponse, engine
 import datetime
 
@@ -43,7 +43,7 @@ app.add_middleware(
 def health_check():
     try:
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
