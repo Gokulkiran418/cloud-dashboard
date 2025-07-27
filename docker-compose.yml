@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: cloudopt-db
+    restart: always
+    environment:
+      POSTGRES_DB: cloudopt
+      POSTGRES_USER: cloudoptuser
+      POSTGRES_PASSWORD: cloudopt123
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+volumes:
+  dbdata:
