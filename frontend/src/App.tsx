@@ -1,15 +1,39 @@
 import { useEffect, useState } from 'react';
 import type { Resource } from '@/services/resources';
 import { resourcesApi } from '@/services/resources';
+import type { RecommendationsResponse } from '@/services/resources';
 import ResourcesTable from '@/components/ResourcesTable';
 import RecommendationsPanel from '@/components/RecommendationsPanel';
+import SummaryHeader from '@/components/SummaryHeader';
 
 export default function App() {
+
   const [healthStatus, setHealthStatus] = useState<string>('checking...');
   const [apiConnected, setApiConnected] = useState<boolean>(false);
   const [resources, setResources] = useState<Resource[]>([]);
   const [loadingResources, setLoadingResources] = useState<boolean>(true);
   const [errorResources, setErrorResources] = useState<string | undefined>(undefined);
+  const [summary, setSummary] = useState<RecommendationsResponse['summary']>();
+  const [loadingSummary, setLoadingSummary] = useState(true);
+  const [summaryError, setSummaryError] = useState<string | undefined>();
+
+  const fetchSummary = async () => {
+    setLoadingSummary(true);
+    setSummaryError(undefined);
+    try {
+      const data = await resourcesApi.getRecommendations();
+      setSummary(data.summary);
+    } catch (e: any) {
+      setSummaryError(e.message || 'Failed to load summary');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  // Fetch summary on mount and whenever a recommendation is implemented
+  useEffect(() => {
+    fetchSummary();
+  }, []);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -46,7 +70,11 @@ export default function App() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">
           Cloud Optimization Dashboard
         </h1>
-
+        <SummaryHeader
+          data={summary}
+          loading={loadingSummary}
+          error={summaryError}
+        />
         {/* System Status Card */}
         <div className="card mb-8">
           <h2 className="text-xl font-semibold mb-4">System Status</h2>
