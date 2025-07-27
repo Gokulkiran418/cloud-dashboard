@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 from sqlmodel import SQLModel, Field,create_engine
 from typing import Optional
+from typing import List, Dict, Any
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -52,3 +53,17 @@ class ResourceResponse(SQLModel):
     monthly_cost: float
     created_at: datetime
     updated_at: datetime
+    
+class RecommendationResponse(SQLModel):
+    resource_id: int
+    recommendation_type: str
+    current_config: str
+    suggested_config: str
+    potential_saving: float
+    confidence: float
+    reason: str
+    implemented: bool = False
+
+class RecommendationsListResponse(SQLModel):
+    recommendations: List[RecommendationResponse]
+    summary: Dict[str, Any]

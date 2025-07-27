@@ -1,17 +1,21 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException,  Depends, Query
+from models import RecommendationResponse, RecommendationsListResponse
+from optimizer import OptimizationEngine
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, create_engine, Session
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, Query
-from typing import List
+from typing import List, Dict, Any
 from sqlmodel import Session, select
 from models import Resource, ResourceResponse, engine
+import datetime
 
 
 # 1. Load ENV
 load_dotenv()
+# Initialize the optimizer
+optimizer = OptimizationEngine()
 
 # 2. Pydantic Settings Class
 class Settings(BaseSettings):
@@ -63,3 +67,47 @@ def list_resources(
     resources = session.exec(stmt).all()
     return resources
 
+@app.get("/recommendations", response_model=RecommendationsListResponse, tags=["recommendations"])
+def get_recommendations(session: Session = Depends(get_session)):
+    """Get optimization recommendations for all resources."""
+    # Get all resources
+    resources = session.exec(select(Resource)).all()
+    
+    # Generate recommendations
+    recommendations_data = optimizer.analyze_resources(resources)
+    
+    # Calculate summary
+    summary = optimizer.calculate_summary(resources, recommendations_data)
+    
+    # Convert to response models
+    recommendations = [RecommendationResponse(**rec) for rec in recommendations_data]
+    
+    return RecommendationsListResponse(
+        recommendations=recommendations,
+        summary=summary
+    )
+
+@app.post("/recommendations/{resource_id}/implement", tags=["recommendations"])
+def implement_recommendation(
+    resource_id: int,
+    session: Session = Depends(get_session)
+):
+    """Mark a recommendation as implemented."""
+    # In a real app, you'd store implemented recommendations in the DB
+    # For this demo, we'll just return success
+    
+    # Verify the resource exists
+    resource = session.get(Resource, resource_id)
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+    
+    # In production, you'd:
+    # 1. Store the implementation in the recommendations table
+    # 2. Update timestamps
+    # 3. Possibly update the resource itself
+    
+    return {
+        "message": f"Recommendation for resource {resource_id} marked as implemented",
+        "resource_name": resource.name,
+        "implemented_at": datetime.utcnow().isoformat()
+    }
